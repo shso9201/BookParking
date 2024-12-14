@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rest-server-deployment
+  labels:
+    app: rest-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rest-server
+  template:
+    metadata:
+      labels:
+        app: rest-server
+    spec:
+      containers:
+      - name: rest-server
+        image: shso9201/parking-rest:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MINIO_HOST
+          value: "minio-proj.minio-ns.svc.cluster.local:9000"  # The MinIO service hostname in Kubernetes
+        - name: MINIO_ACCESS_KEY
+          value: "rootuser"   # Replace with your MinIO access key
+        - name: MINIO_SECRET_KEY
+          value: "rootpass123"   # Replace with your MinIO secret key
+        - name: REDIS_HOST
+          value: "redis"  # This should match the name of the Redis service
+        - name: POSTGRES_HOST
+          value: "postgres"  # This should match the name of the PostgreSQL service
+        - name: POSTGRES_USER
+          value: "postgres"  # Replace with your PostgreSQL username
+        - name: POSTGRES_PASSWORD
+          value: "yourpassword"  # Replace with your PostgreSQL password
+        - name: POSTGRES_DB
+          value: "yourdatabase"  # Replace with your PostgreSQL database name
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rest-server-service
+  labels:
+    app: rest-server
+spec:
+  type: ClusterIP
+  selector:
+    app: rest-server
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
